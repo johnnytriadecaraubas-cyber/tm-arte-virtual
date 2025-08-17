@@ -1,685 +1,561 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Chosen Palette: Neutros quentes (slate, teal) para uma estética moderna e calma. -->
-    <!-- Application Structure Plan: A aplicação é estruturada em um layout de painel principal com apenas duas abas: Criação e Favoritos. O layout foi simplificado para evitar erros e proporcionar uma experiência mais direta. -->
-    <!-- Visualization & Content Choices: A interface permite a criação de imagens a partir de um prompt e a gestão de favoritos. Todas as funcionalidades foram otimizadas para garantir a estabilidade do site. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T&M Arte Virtual</title>
+    <title>T&M Arte Virtual - Criação de Imagens AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-            color: #f1f5f9;
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .tab-button.active {
-            border-bottom: 2px solid #2dd4bf;
-            color: #ffffff;
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body class="bg-slate-900 min-h-screen text-slate-100 font-inter flex flex-col items-center p-4 md:p-8">
-
-    <!-- Landing Page -->
-    <div id="landing-page" class="w-full h-screen flex flex-col items-center justify-center text-center">
-        <h1 class="text-6xl font-extrabold text-white tracking-wider mb-4">
-            <span class="text-teal-400">T&M</span> Arte Virtual
-        </h1>
-        <p class="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
-            Crie, explore e salve obras de arte virtuais.
-        </p>
-        <button id="start-button" class="py-4 px-8 bg-teal-500 text-white text-xl font-bold rounded-xl shadow-xl hover:bg-teal-600 transition-colors duration-300">
-            Começar a Criar
-        </button>
-    </div>
-
-    <!-- Main App -->
-    <div id="main-app" class="w-full max-w-7xl hidden">
-        <!-- Modals -->
-        <div id="pix-modal" class="fixed inset-0 bg-black bg-opacity-75 items-center justify-center p-4 z-50 hidden">
-            <div class="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-lg w-full text-center border border-slate-700">
-                <h3 class="text-xl font-bold mb-4">Sucesso!</h3>
-                <p class="text-lg mb-6">
-                    A chave PIX foi copiada para a área de transferência. Muito obrigado pela sua ajuda!
-                </p>
-                <button id="close-pix-modal" class="px-6 py-3 bg-teal-500 hover:bg-teal-600 rounded-lg transition-colors font-semibold">
-                        Fechar
-                </button>
+<body class="bg-gray-900 text-white">
+    <!-- Header -->
+    <header class="gradient-bg shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <img src="pMvG5cSdQxStbTTMi53PG" alt="T&M Arte Virtual" class="h-12 w-12 rounded-full">
+                <h1 class="text-2xl font-bold">T&M Arte Virtual</h1>
             </div>
+            <nav class="hidden md:flex space-x-6">
+                <button onclick="showTab('generator')" class="hover:text-yellow-300 transition-colors">Gerador</button>
+                <button onclick="showTab('veo3')" class="hover:text-yellow-300 transition-colors">VEO3</button>
+                <button onclick="showPix()" class="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-donate mr-2"></i>PIX
+                </button>
+            </nav>
         </div>
-        <div id="image-viewer-modal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-50 hidden">
-            <div class="relative max-w-4xl max-h-full">
-                <button id="close-image-viewer" class="absolute top-4 right-4 bg-slate-700 text-white rounded-full p-2 hover:bg-red-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                </button>
-                <img id="viewer-image" alt="Imagem gerada" class="max-w-full max-h-[80vh] rounded-lg shadow-xl">
-                <div id="viewer-buttons" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
-                    <button id="remix-button" class="py-2 px-4 bg-teal-500 text-white rounded-full shadow-lg hover:bg-teal-600 transition-colors flex items-center gap-2">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shuffle"><path d="M2 17h2v-2"/><path d="M22 17h-2v-2"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M12 16h.01"/><path d="M16 16h.01"/><path d="M12 8h.01"/><path d="M8 12h.01"/><path d="M8 8h.01"/><path d="M16 8h.01"/></svg>
-                        Remixar
-                    </button>
-                    <button id="copy-prompt-button" class="py-2 px-4 bg-slate-700 text-white rounded-full shadow-lg hover:bg-slate-600 transition-colors flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2"/></svg>
-                        Copiar Prompt
-                    </button>
-                    <button id="download-image" class="py-2 px-4 bg-slate-700 text-white rounded-full shadow-lg hover:bg-slate-600 transition-colors flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                        Download
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal Veo3 Alternativo: Abre o link do Google Vids -->
-        <div id="veo3-alternativo-modal" class="fixed inset-0 bg-black bg-opacity-75 items-center justify-center p-4 z-50 hidden">
-            <div class="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-lg w-full text-center border border-slate-700">
-                <h3 class="text-xl font-bold mb-4">Aviso</h3>
-                <p class="text-lg mb-6">
-                    Você será direcionado ao Google Vids.
-                </p>
-                <div class="flex justify-center space-x-4">
-                    <button id="close-veo3-alternativo-modal" class="px-6 py-3 bg-slate-600 hover:bg-slate-700 rounded-lg transition-colors font-semibold">
-                        Fechar
-                    </button>
-                    <a href="https://docs.google.com/videos/u/0/" target="_blank" rel="noopener noreferrer" class="py-3 px-6 bg-teal-500 text-white rounded-full font-semibold hover:bg-teal-600 transition-colors inline-flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                        Clique aqui
-                    </a>
-                </div>
-            </div>
-        </div>
+    </header>
 
-        <!-- Cabeçalho -->
-        <header class="w-full flex justify-between items-center mb-4">
-            <div class="flex items-center gap-4">
-                <img src="https://ia801701.us.archive.org/17/items/logo-tem/logo%20TEM.png" alt="Logo T&M Arte Virtual" class="rounded-lg h-10">
-                <h1 class="text-4xl font-extrabold text-white tracking-wider">
-                    <span class="text-teal-400">T&M</span> Arte Virtual
-                </h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <button id="veo3-alternativo-button" class="bg-slate-700 text-slate-200 hover:bg-teal-500 transition-colors duration-300 py-2 px-4 rounded-full flex items-center gap-2 font-semibold shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                    <span>VEO3 Alternativo</span>
-                </button>
-                <button id="veo3-button" class="bg-slate-700 text-slate-200 hover:bg-teal-500 transition-colors duration-300 py-2 px-4 rounded-full flex items-center gap-2 font-semibold shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                    <span>Veo3</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Barra de Navegação principal -->
-        <nav class="w-full flex justify-center lg:justify-start gap-4 mb-8 border-b-2 border-slate-700">
-            <button id="tab-create" class="tab-button px-6 py-3 font-semibold text-slate-400 hover:text-white transition-colors active">Criar</button>
-            <button id="tab-favorites" class="tab-button px-6 py-3 font-semibold text-slate-400 hover:text-white transition-colors">Favoritos</button>
-        </nav>
-    
-        <main class="w-full flex flex-col lg:flex-row gap-8">
-            <!-- Painel de Controle (Input e Opções) -->
-            <aside id="control-panel" class="w-full lg:w-1/3 bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-700 flex-col gap-6">
-                
-                <!-- Controles de criação de imagem -->
-                <div id="create-tab-content" class="tab-content flex flex-col gap-6">
-                    <div class="flex flex-col gap-2">
-                        <label for="prompt" class="text-lg font-semibold text-slate-300">Seu Prompt</label>
-                        <textarea id="prompt" rows="4" class="w-full bg-slate-700 text-slate-100 p-4 rounded-xl border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all resize-none" placeholder="Descreva a imagem que você deseja gerar..."></textarea>
-                        <p id="error-message" class="text-red-400 text-sm mt-2 hidden"></p>
-                        <div class="flex flex-col sm:flex-row gap-2 mt-2">
-                            <button id="translate-prompt" class="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-slate-600 hover:bg-slate-500 transition-all rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h10"/><path d="M10 19h8"/><path d="M17 7l-2 3"/><path d="m11 19 6-6 3 3"/></svg>
-                                Traduzir Prompt
-                            </button>
-                            <button id="enhance-prompt" class="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-slate-600 hover:bg-slate-500 transition-all rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="M9.9 15.6l-2.4 2.1c-.2.2-.5.2-.7 0-.2-.2-.2-.5 0-.7l2.4-2.1c.4-.4.4-1 0-1.4l-2.4-2.1c-.2-.2-.2-.5 0-.7.2-.2.5-.2.7 0l2.4 2.1c.4.4 1 .4 1.4 0l2.4-2.1c.2-.2.5-.2.7 0 .2.2.2.5 0 .7l-2.4 2.1c-.4.4-.4 1 0 1.4l2.4 2.1c.2.2.2.5 0 .7-.2.2-.5.2-.7 0l-2.4-2.1c-.4-.4-1-.4-1.4 0z"/><path d="M12.9 6.6 15.3 4.5c.2-.2.5-.2.7 0 .2.2.2.5 0 .7l-2.4 2.1c-.4.4-.4 1 0 1.4l2.4 2.1c.2.2.2.5 0 .7-.2.2-.5.2-.7 0l-2.4-2.1c-.4-.4-1-.4-1.4 0l-2.4 2.1c-.2.2-.5.2-.7 0-.2-.2-.2-.5 0-.7l2.4-2.1c.4-.4.4-1 0-1.4l-2.4-2.1c-.2-.2-.2-.5 0-.7.2-.2.5-.2.7 0l2.4 2.1c.4.4 1 .4 1.4 0z"/><path d="M15.9 19.6l2.4 2.1c.2.2.5.2.7 0 .2-.2.2-.5 0-.7l-2.4-2.1c-.4-.4-.4-1 0-1.4l2.4-2.1c.2-.2.5-.2.7 0 .2.2.2.5 0 .7l-2.4 2.1c-.4.4-.4 1 0 1.4l2.4 2.1c.2.2.2.5 0 .7-.2.2-.5.2-.7 0l-2.4-2.1c-.4-.4-1-.4-1.4 0z"/></svg>
-                                Melhorar Prompt
-                            </button>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Generator Tab -->
+        <div id="generator-tab" class="tab-content">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Controls Panel -->
+                <div class="lg:col-span-1">
+                    <div class="glass-effect rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4">Controles de Geração</h2>
+                        
+                        <!-- Prompt Input -->
+                        <div class="mb-4">
+                            <label class="block mb-2">Prompt:</label>
+                            <textarea id="prompt" placeholder="Descreva a imagem que você quer criar..." 
+                                    class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:border-blue-500 h-24"></textarea>
+                            <div class="mt-2 flex space-x-2">
+                                <button onclick="enhancePromptInGenerator()" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                    <i class="fas fa-magic mr-2"></i>Melhorar
+                                </button>
+                                <select id="translateLang" class="bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-600">
+                                    <option value="">Traduzir para...</option>
+                                    <option value="en">Inglês</option>
+                                    <option value="es">Espanhol</option>
+                                    <option value="fr">Francês</option>
+                                    <option value="it">Italiano</option>
+                                    <option value="de">Alemão</option>
+                                    <option value="ja">Japonês</option>
+                                    <option value="ko">Coreano</option>
+                                    <option value="zh">Chinês</option>
+                                </select>
+                                <button onclick="translatePromptInGenerator()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-language mr-2"></i>Traduzir
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="space-y-4">
-                        <label class="text-lg font-semibold text-slate-300">Histórico de Prompts</label>
-                        <div id="prompt-history-container" class="bg-slate-700 p-4 rounded-xl border border-slate-600 overflow-y-auto max-h-40">
-                            <p class="text-slate-400">Nenhum histórico disponível.</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <label for="styles" class="text-lg font-semibold text-slate-300">Estilos</label>
-                        <div id="styles-container" class="flex flex-wrap gap-2">
-                            <!-- Botões de estilo serão gerados aqui -->
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <div class="flex-1 flex flex-col gap-2">
-                            <label for="image-count" class="text-lg font-semibold text-slate-300">Número de Imagens</label>
-                            <input type="number" id="image-count" min="1" max="30" value="1" class="w-full bg-slate-700 text-slate-100 p-3 rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
-                        </div>
-                        <div class="flex-1 flex flex-col gap-2">
-                            <label for="image-size" class="text-lg font-semibold text-slate-300">Tamanho da Imagem</label>
-                            <select id="image-size" class="w-full bg-slate-700 text-slate-100 p-3 rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all">
-                                <option value="1:1">Quadrado (1:1)</option>
-                                <option value="16:9">Paisagem (16:9)</option>
-                                <option value="9:16">Retrato (9:16)</option>
+                        <!-- Style Categories -->
+                        <div class="mb-4">
+                            <label class="block mb-2">Estilo:</label>
+                            <select id="style" class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600">
+                                <option value="">Selecione um estilo</option>
+                                <optgroup label="Realista">
+                                    <option value="photorealistic">Fotorrealista</option>
+                                    <option value="portrait">Retrato</option>
+                                    <option value="landscape">Paisagem</option>
+                                </optgroup>
+                                <optgroup label="Religioso">
+                                    <option value="religious-art">Arte Religiosa</option>
+                                    <option value="biblical">Bíblico</option>
+                                    <option value="sacred">Sagrado</option>
+                                </optgroup>
+                                <optgroup label="Terror">
+                                    <option value="horror">Terror</option>
+                                    <option value="dark-fantasy">Fantasia Sombria</option>
+                                    <option value="gothic">Gótico</option>
+                                </optgroup>
+                                <optgroup label="Romance">
+                                    <option value="romantic">Romântico</option>
+                                    <option value="wedding">Casamento</option>
+                                    <option value="love">Amor</option>
+                                </optgroup>
+                                <optgroup label="Ficção">
+                                    <option value="sci-fi">Ficção Científica</option>
+                                    <option value="fantasy">Fantasia</option>
+                                    <option value="cyberpunk">Cyberpunk</option>
+                                </optgroup>
+                                <optgroup label="Para Colorir">
+                                    <option value="coloring-book">Livro de Colorir</option>
+                                    <option value="line-art">Arte Linear</option>
+                                    <option value="mandala">Mandala</option>
+                                </optgroup>
+                                <optgroup label="Anime">
+                                    <option value="anime">Anime</option>
+                                    <option value="manga">Manga</option>
+                                    <option value="chibi">Chibi</option>
+                                </optgroup>
                             </select>
                         </div>
-                    </div>
 
-                    <button id="generate-images" class="w-full py-4 bg-teal-500 hover:bg-teal-600 transition-all rounded-xl text-white text-xl font-bold flex items-center justify-center gap-3 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span id="loading-spinner" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin hidden"></span>
-                        <span id="generate-button-text" class="flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                            Gerar Imagens
-                        </span>
-                    </button>
-
-                    <!-- Botão de PIX -->
-                    <div class="mt-6 flex flex-col items-center gap-4 bg-slate-700 p-6 rounded-2xl border border-slate-600 shadow-md">
-                        <h4 class="text-lg font-bold text-slate-200">Ajude a manter o site no ar!</h4>
-                        <p class="text-sm text-slate-400 text-center">
-                            Contribua com qualquer valor para ajudar o criador a manter o site online e com novas funções.
-                        </p>
-                        <div class="bg-slate-600 p-4 rounded-lg flex flex-col items-center">
-                            <span class="text-lg font-semibold text-white">PIX: 84996096315</span>
-                            <span class="text-sm text-slate-400">Tancredo Oliveira (Banco Neon)</span>
+                        <!-- Image Size -->
+                        <div class="mb-4">
+                            <label class="block mb-2">Tamanho da Imagem:</label>
+                            <select id="size" class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600">
+                                <option value="512x512">Quadrado (512x512)</option>
+                                <option value="768x512">Paisagem (768x512)</option>
+                                <option value="512x768">Retrato (512x768)</option>
+                                <option value="1024x1024">Grande Quadrado (1024x1024)</option>
+                                <option value="1024x768">Grande Paisagem (1024x768)</option>
+                                <option value="768x1024">Grande Retrato (768x1024)</option>
+                            </select>
                         </div>
-                        <button id="copy-pix" class="py-2 px-6 bg-green-500 hover:bg-green-600 transition-all rounded-lg text-white font-semibold">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code"><rect width="21" height="21" x="3" y="3" rx="2" ry="2"/><path d="M12 12h.01"/><path d="M16 12h.01"/><path d="M16 16h.01"/><path d="M12 16h.01"/><path d="M12 8h.01"/><path d="M8 12h.01"/><path d="M8 8h.01"/><path d="M16 8h.01"/></svg>
-                            Copiar Chave PIX
+
+                        <!-- Number of Images -->
+                        <div class="mb-4">
+                            <label class="block mb-2">Número de Imagens (1-30):</label>
+                            <input type="range" id="numImages" min="1" max="30" value="4" 
+                                   class="w-full" onchange="document.getElementById('numDisplay').textContent = this.value">
+                            <div class="text-center mt-1">
+                                <span id="numDisplay">4</span> imagens
+                            </div>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <button onclick="generateImages()" 
+                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
+                                       py-3 rounded-lg font-semibold transition-all transform hover:scale-105">
+                            <i class="fas fa-magic mr-2"></i>Gerar Imagens
                         </button>
                     </div>
                 </div>
-            </aside>
 
-            <!-- Painel de Resultados (dinâmico) -->
-            <div id="dynamic-content-panel" class="w-full lg:w-2/3 bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-700">
-                
-                <!-- Tab de Criação -->
-                <div id="create-tab-content" class="tab-content">
-                    <h2 id="create-content-title" class="text-2xl font-bold text-white mb-6">Resultados da Geração</h2>
-                    <div id="create-content-area" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <p class="text-slate-400 text-center text-lg col-span-full">Suas imagens geradas aparecerão aqui.</p>
+                <!-- Generated Images -->
+                <div class="lg:col-span-2">
+                    <div class="glass-effect rounded-xl p-6">
+                        <h2 class="text-xl font-bold mb-4">Imagens Geradas</h2>
+                        <div id="imageGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[400px]">
+                            <div class="col-span-full flex items-center justify-center text-gray-400">
+                                <i class="fas fa-image text-6xl mb-4"></i>
+                                <p class="text-center">Suas imagens aparecerão aqui após a geração</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Tab de Favoritos -->
-                <div id="favorites-tab-content" class="tab-content hidden">
-                    <h2 id="favorites-content-title" class="text-2xl font-bold text-white mb-6">Minhas Imagens Favoritas</h2>
-                    <div id="favorites-content-area" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <p class="text-slate-400 text-center text-lg col-span-full">Você ainda não tem imagens favoritas.</p>
-                    </div>
-                </div>
-                
             </div>
-        </main>
+        </div>
+
+        <!-- VEO3 Tab -->
+        <div id="veo3-tab" class="tab-content hidden">
+            <div class="glass-effect rounded-xl p-8 text-center">
+                <h2 class="text-3xl font-bold mb-6">VEO3 - Geração de Vídeo AI</h2>
+                <div class="bg-yellow-600 text-black p-4 rounded-lg mb-6">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Atenção:</strong> É necessário usar VPN com IP dos Estados Unidos para acessar o VEO3
+                </div>
+                <p class="text-xl mb-6">Acesse a tecnologia mais avançada de geração de vídeos por IA</p>
+                <button onclick="openVeo3()" 
+                        class="bg-red-600 hover:bg-red-700 px-8 py-4 rounded-lg text-xl font-bold transition-all transform hover:scale-105">
+                    <i class="fas fa-external-link-alt mr-2"></i>Abrir VEO3
+                </button>
+            </div>
+        </div>
+
+
+
+
+    </main>
+
+    <!-- PIX Modal -->
+    <div id="pixModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white text-black rounded-xl p-8 max-w-md mx-4">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-4">Apoie o T&M Arte Virtual</h3>
+                <p class="mb-6">Ajude a manter o site sempre atualizado e online com novas funcionalidades!</p>
+                
+                <div class="bg-gray-100 p-4 rounded-lg mb-4">
+                    <p class="font-bold">Chave PIX:</p>
+                    <p class="text-lg font-mono bg-gray-200 p-2 rounded" id="pixKey">84996096315</p>
+                    <p class="text-sm mt-2">Tancredo Oliveira - Banco Neon</p>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button onclick="copyPix()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex-1">
+                        <i class="fas fa-copy mr-2"></i>Copiar PIX
+                    </button>
+                    <button onclick="closePix()" class="bg-gray-600 text-white px-4 py-2 rounded-lg flex-1">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const landingPage = document.getElementById('landing-page');
-            const startButton = document.getElementById('start-button');
-            const mainApp = document.getElementById('main-app');
+    <script type="module">
+        // Tab Management
+        window.showTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+        }
 
-            const promptInput = document.getElementById('prompt');
-            const stylesContainer = document.getElementById('styles-container');
-            const imageCountInput = document.getElementById('image-count');
-            const imageSizeSelect = document.getElementById('image-size');
-            const generateButton = document.getElementById('generate-images');
-            const translateButton = document.getElementById('translate-prompt');
-            const enhanceButton = document.getElementById('enhance-prompt');
-            const errorMessage = document.getElementById('error-message');
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const generateButtonText = document.getElementById('generate-button-text');
-            const promptHistoryContainer = document.getElementById('prompt-history-container');
+        // PIX Modal
+        window.showPix = function() {
+            document.getElementById('pixModal').classList.remove('hidden');
+        }
 
-            const tabCreate = document.getElementById('tab-create');
-            const tabFavorites = document.getElementById('tab-favorites');
+        window.closePix = function() {
+            document.getElementById('pixModal').classList.add('hidden');
+        }
 
-            const createTabContent = document.getElementById('create-tab-content');
-            const favoritesTabContent = document.getElementById('favorites-tab-content');
-            const createContentArea = document.getElementById('create-content-area');
-            const favoritesContentArea = document.getElementById('favorites-content-area');
+        window.copyPix = function() {
+            navigator.clipboard.writeText('84996096315').then(() => {
+                alert('Chave PIX copiada com sucesso!');
+            });
+        }
 
-            const veo3Button = document.getElementById('veo3-button');
-            const veo3AlternativoButton = document.getElementById('veo3-alternativo-button');
-            const veo3Modal = document.getElementById('veo3-modal');
-            const closeVeo3Modal = document.getElementById('close-veo3-modal');
-            const continueVeo3Link = document.getElementById('continue-veo3-link');
+        // VEO3 Access
+        window.openVeo3 = function() {
+            window.open('https://opal.withgoogle.com/?flow=drive:/1M1RZ5CqMRsP2Ys6JArbYZt0WyUq6AbnE&mode=app&shared=true', '_blank');
+        }
+        
+
+        // Image Generation
+        window.generateImages = function() {
+            const prompt = document.getElementById('prompt').value;
+            const style = document.getElementById('style').value;
+            const size = document.getElementById('size').value;
+            const numImages = parseInt(document.getElementById('numImages').value);
+
+            if (!prompt.trim()) {
+                alert('Por favor, insira um prompt para gerar as imagens.');
+                return;
+            }
+
+            const imageGrid = document.getElementById('imageGrid');
+            imageGrid.innerHTML = '<div class="col-span-full text-center"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p>Gerando imagens...</p></div>';
+
+            // Generate unique images with proper style application
+            setTimeout(() => {
+                let html = '';
+                const timestamp = Date.now();
+                
+                for (let i = 0; i < numImages; i++) {
+                    // Create unique prompt with style modifiers
+                    let fullPrompt = prompt;
+                    
+                    // Apply style modifiers
+                    if (style) {
+                        const styleModifiers = {
+                            'photorealistic': 'photorealistic, ultra realistic, 8k, professional photography',
+                            'portrait': 'professional portrait photography, studio lighting, detailed face',
+                            'landscape': 'landscape photography, scenic view, natural lighting',
+                            'religious-art': 'religious art, sacred, spiritual, renaissance style',
+                            'biblical': 'biblical scene, classical religious painting, divine lighting',
+                            'sacred': 'sacred art, holy, ethereal, golden light',
+                            'horror': 'horror style, dark, scary, gothic atmosphere',
+                            'dark-fantasy': 'dark fantasy art, mysterious, shadows, dramatic',
+                            'gothic': 'gothic style, dark architecture, medieval atmosphere',
+                            'romantic': 'romantic style, soft lighting, pastel colors, dreamy',
+                            'wedding': 'wedding photography, elegant, beautiful, celebration',
+                            'love': 'romantic scene, love, tender moment, soft focus',
+                            'sci-fi': 'science fiction, futuristic, high tech, space age',
+                            'fantasy': 'fantasy art, magical, enchanted, mystical creatures',
+                            'cyberpunk': 'cyberpunk style, neon lights, futuristic city, digital',
+                            'coloring-book': 'coloring book style, black and white line art, simple',
+                            'line-art': 'line art, minimalist, clean lines, black and white',
+                            'mandala': 'mandala design, geometric patterns, symmetrical, intricate',
+                            'anime': 'anime style, manga art, japanese animation, colorful',
+                            'manga': 'manga style, black and white, japanese comic art',
+                            'chibi': 'chibi style, cute, small characters, kawaii'
+                        };
+                        
+                        if (styleModifiers[style]) {
+                            fullPrompt += ', ' + styleModifiers[style];
+                        }
+                    }
+                    
+                    // Add variation to each image
+                    const variations = [
+                        ', high quality, detailed',
+                        ', masterpiece, artistic',
+                        ', professional, clean',
+                        ', vibrant colors, sharp',
+                        ', dramatic lighting',
+                        ', soft focus, elegant',
+                        ', dynamic composition',
+                        ', rich textures, depth'
+                    ];
+                    
+                    const variation = variations[i % variations.length];
+                    const uniqueId = `${timestamp}_${i}_${Math.random().toString(36).substr(2, 9)}`;
+                    const sizeParam = `&size=${size}`;
+                    const encodedPrompt = encodeURIComponent(fullPrompt + variation);
+                    
+                    // Calculate dimensions based on selected size
+                    const [width, height] = size.split('x').map(Number);
+                    const aspectRatio = width / height;
+                    
+                    // Generate proper aspect ratio URL parameter
+                    let aspectParam = '';
+                    if (width === height) {
+                        aspectParam = '&aspect=1:1';
+                    } else if (aspectRatio > 1) {
+                        // Landscape
+                        const ratio = Math.round(aspectRatio * 100) / 100;
+                        if (ratio >= 1.77) aspectParam = '&aspect=16:9';
+                        else if (ratio >= 1.4) aspectParam = '&aspect=3:2';
+                        else aspectParam = '&aspect=4:3';
+                    } else {
+                        // Portrait
+                        const ratio = Math.round((height / width) * 100) / 100;
+                        if (ratio >= 1.77) aspectParam = '&aspect=9:16';
+                        else if (ratio >= 1.4) aspectParam = '&aspect=2:3';
+                        else aspectParam = '&aspect=3:4';
+                    }
+                    
+                    const imageUrl = `keys/${uniqueId}?prompt=${encodedPrompt}${sizeParam}${aspectParam}`;
+                    const safePrompt = fullPrompt.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                    
+                    html += `
+                        <div class="relative group">
+                            <div class="w-full bg-gray-800 rounded-lg overflow-hidden" style="aspect-ratio: ${width}/${height};">
+                                <img src="${imageUrl}" 
+                                     alt="Generated Image ${i+1}" 
+                                     class="w-full h-full object-cover cursor-pointer"
+                                     onclick="viewImage('${imageUrl}', '${safePrompt}', '${width}x${height}')">
+                            </div>
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center">
+                                <div class="flex space-x-2">
+                                    <button onclick="event.stopPropagation(); viewImage('${imageUrl}', '${safePrompt}', '${width}x${height}')" 
+                                            class="bg-green-600 text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button onclick="event.stopPropagation(); downloadImage('${imageUrl}', '${uniqueId}')" 
+                                            class="bg-blue-600 text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                imageGrid.innerHTML = html;
+            }, 2000);
+        }
+
+        window.downloadImage = function(src, filename = null) {
+            const downloadName = filename ? `tm_arte_virtual_${filename}.png` : `tm_arte_virtual_${Date.now()}.png`;
             
-            const pixButton = document.getElementById('copy-pix');
-            const pixModal = document.getElementById('pix-modal');
-            const closePixModal = document.getElementById('close-pix-modal');
+            // Create a temporary canvas to handle the image
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                canvas.toBlob(function(blob) {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = downloadName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+            
+            img.onerror = function() {
+                // Fallback: direct link download
+                const a = document.createElement('a');
+                a.href = src;
+                a.download = downloadName;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+            
+            img.src = src;
+        }
 
-            const imageViewerModal = document.getElementById('image-viewer-modal');
-            const viewerImage = document.getElementById('viewer-image');
-            const closeImageViewerButton = document.getElementById('close-image-viewer');
-            const downloadImageButton = document.getElementById('download-image');
-            const remixButton = document.getElementById('remix-button');
-            const copyPromptButton = document.getElementById('copy-prompt-button');
+        window.viewImage = function(src, prompt, dimensions = null) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4';
+            modal.onclick = function(e) {
+                if (e.target === modal) modal.remove();
+            };
+            
+            modal.innerHTML = `
+                <div class="max-w-6xl max-h-[95vh] bg-white rounded-lg overflow-hidden shadow-2xl">
+                    <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
+                        <h3 class="font-bold text-lg">Visualizar Imagem Gerada</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-white hover:text-red-400 text-xl">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-center mb-4">
+                            <div class="max-w-full max-h-[70vh] bg-gray-100 rounded-lg shadow-lg overflow-hidden">
+                                <img src="${src}" alt="Generated Image" class="w-full h-full object-contain" 
+                                     onload="this.style.opacity='1'" style="opacity:0; transition: opacity 0.3s;">
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-700"><strong>Prompt usado:</strong></p>
+                            <p class="text-sm text-gray-600 mt-1 italic">${prompt}</p>
+                            ${dimensions ? `<p class="text-sm text-gray-500 mt-2"><strong>Dimensões:</strong> ${dimensions}</p>` : ''}
+                        </div>
+                        <div class="mt-6 flex justify-center space-x-4">
+                            <button onclick="downloadImage('${src}', 'imagem_${Date.now()}')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                                <i class="fas fa-download mr-2"></i>Baixar Imagem
+                            </button>
+                            <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-times mr-2"></i>Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
 
-            let selectedStyle = 'Nenhum';
-            let selectedImageForDownload = null;
-            let currentImagePrompt = '';
-            let loading = false;
-            let imagesGeneratedCount = 0;
-            let currentImages = [];
+        
+        // Enhance prompt in generator tab
+        window.enhancePromptInGenerator = function() {
+            const originalPrompt = document.getElementById('prompt').value;
+            
+            if (!originalPrompt.trim()) {
+                alert('Por favor, digite um prompt primeiro.');
+                return;
+            }
 
-            const styles = [
-                'Nenhum', 'Realista', 'Religioso', 'Terror', 'Romance', 'Ficção',
-                'Desenhos para colorir', 'Animes', 'Fantasia', 'Cyberpunk', 'Aquarela'
+            const enhancements = [
+                ', highly detailed, 8k resolution, professional photography, masterpiece',
+                ', cinematic lighting, ultra realistic, award winning, high quality',
+                ', vibrant colors, sharp focus, perfect composition, stunning details',
+                ', dramatic lighting, photorealistic, studio quality, intricate details',
+                ', premium quality, perfect lighting, rich textures, depth of field',
+                ', professional grade, exceptional detail, perfect clarity, artistic masterpiece',
+                ', ultra high definition, flawless execution, museum quality, breathtaking',
+                ', crystal clear, perfect proportions, excellent composition, world class'
             ];
 
-            const updateLoadingState = (isLoading) => {
-                loading = isLoading;
-                generateButton.disabled = isLoading;
-                translateButton.disabled = isLoading;
-                enhanceButton.disabled = isLoading;
-                if (isLoading) {
-                    loadingSpinner.classList.remove('hidden');
-                    generateButtonText.classList.remove('flex');
-                    generateButtonText.classList.add('hidden');
-                } else {
-                    loadingSpinner.classList.add('hidden');
-                    generateButtonText.classList.remove('hidden');
-                    generateButtonText.classList.add('flex');
-                }
-            };
-
-            const displayError = (message) => {
-                errorMessage.textContent = message;
-                errorMessage.classList.remove('hidden');
-            };
-
-            const hideError = () => {
-                errorMessage.textContent = '';
-                errorMessage.classList.add('hidden');
-            };
-
-            const exponentialBackoff = async (func, retries = 5, delay = 1000) => {
-                try {
-                    const response = await func();
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return await response.json();
-                } catch (error) {
-                    if (retries > 0) {
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        return exponentialBackoff(func, retries - 1, delay * 2);
-                    }
-                    throw error;
-                }
-            };
+            const randomEnhancement = enhancements[Math.floor(Math.random() * enhancements.length)];
+            const enhanced = originalPrompt + randomEnhancement;
             
-            const savePromptToHistory = (promptText) => {
-                const history = JSON.parse(localStorage.getItem('promptHistory')) || [];
-                if (!history.includes(promptText)) {
-                    history.unshift(promptText);
-                    localStorage.setItem('promptHistory', JSON.stringify(history.slice(0, 5)));
-                }
-            };
-
-            const renderPromptHistory = () => {
-                const history = JSON.parse(localStorage.getItem('promptHistory')) || [];
-                promptHistoryContainer.innerHTML = '';
-                if (history.length === 0) {
-                    promptHistoryContainer.innerHTML = `<p class="text-slate-400">Nenhum histórico disponível.</p>`;
-                } else {
-                    history.forEach(promptText => {
-                        const historyItem = document.createElement('div');
-                        historyItem.className = 'p-2 bg-slate-600 rounded-lg text-sm text-slate-200 cursor-pointer hover:bg-slate-500 transition-colors duration-200';
-                        historyItem.textContent = promptText;
-                        historyItem.addEventListener('click', () => {
-                            promptInput.value = promptText;
-                            handleTabChange('tab-create');
-                        });
-                        promptHistoryContainer.appendChild(historyItem);
-                    });
-                }
-            };
-
-            const renderFavorites = () => {
-                const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-                favoritesContentArea.innerHTML = '';
-                if (favorites.length === 0) {
-                    favoritesContentArea.innerHTML = `<p class="text-slate-400 text-center text-lg col-span-full">Você ainda não tem imagens favoritas.</p>`;
-                } else {
-                    favorites.forEach((image) => {
-                        const imgDiv = createInteractiveImageDiv(image, true);
-                        favoritesContentArea.appendChild(imgDiv);
-                    });
-                }
-            };
+            document.getElementById('prompt').value = enhanced;
             
-            const handleGenerateImages = async () => {
-                const prompt = promptInput.value.trim();
-                const imageCount = parseInt(imageCountInput.value, 10);
-                const imageSize = imageSizeSelect.value;
-
-                if (!prompt) {
-                    displayError('Por favor, insira um prompt.');
-                    return;
-                }
-                if (imageCount < 1 || imageCount > 30) {
-                    displayError('O número de imagens deve estar entre 1 e 30.');
-                    return;
-                }
-                
-                hideError();
-                updateLoadingState(true);
-                createContentArea.innerHTML = '';
-                imagesGeneratedCount = 0;
-                currentImages = [];
-                savePromptToHistory(prompt);
-                renderPromptHistory();
-                
-                let finalPrompt = prompt;
-                if (imageSize === '16:9') {
-                    finalPrompt = `a wide cinematic landscape photo, with the following theme: ${prompt}`;
-                } else if (imageSize === '9:16') {
-                    finalPrompt = `a vertical portrait photo, with the following theme: ${prompt}`;
-                }
-
-                const stylePrefix = selectedStyle === 'Nenhum' ? '' : `in the style of ${selectedStyle}. `;
-                finalPrompt = stylePrefix + finalPrompt;
-
-                const allImages = [];
-                const batchSize = 4;
-                const numBatches = Math.ceil(imageCount / batchSize);
-
-                for (let i = 0; i < numBatches; i++) {
-                    const currentBatchSize = Math.min(batchSize, imageCount - allImages.length);
-                    try {
-                        const payload = { instances: { prompt: finalPrompt }, parameters: { sampleCount: currentBatchSize } };
-                        const apiKey = "";
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-
-                        const result = await exponentialBackoff(() => fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        }));
-
-                        if (result.predictions && result.predictions.length > 0) {
-                            const newImages = result.predictions.map(prediction => `data:image/png;base64,${prediction.bytesBase64Encoded}`);
-                            newImages.forEach(imgSrc => {
-                                allImages.push({ src: imgSrc, prompt: finalPrompt });
-                            });
-                            imagesGeneratedCount = allImages.length;
-                            generateButtonText.textContent = `Gerando... (${imagesGeneratedCount}/${imageCount})`;
-                            currentImages = allImages;
-                            renderImages(currentImages, createContentArea, false);
-                        } else {
-                            displayError('Não foi possível gerar imagens neste lote. Tentando o próximo...');
+            // Show feedback
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check mr-2"></i>Prompt Melhorado!';
+            button.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+            button.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-purple-600', 'hover:bg-purple-700');
+            }, 2000);
+        }
+        
+        // Translate prompt in generator tab
+        window.translatePromptInGenerator = function() {
+            const originalPrompt = document.getElementById('prompt').value;
+            const toLang = document.getElementById('translateLang').value;
+            
+            if (!originalPrompt.trim()) {
+                alert('Por favor, digite um prompt primeiro.');
+                return;
+            }
+            
+            if (!toLang) {
+                alert('Por favor, selecione um idioma para tradução.');
+                return;
+            }
+            
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traduzindo...';
+            button.disabled = true;
+            
+            // Use MyMemory translation API
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(originalPrompt)}&langpair=pt|${toLang}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.responseStatus === 200 || data.responseData) {
+                        document.getElementById('prompt').value = data.responseData.translatedText;
+                        button.innerHTML = '<i class="fas fa-check mr-2"></i>Traduzido!';
+                        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        button.classList.add('bg-green-600');
+                    } else {
+                        throw new Error('Translation failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Translation error:', error);
+                    // Basic fallback translations
+                    const basicTranslations = {
+                        'en': {
+                            'gato': 'cat', 'cachorro': 'dog', 'casa': 'house', 'carro': 'car',
+                            'paisagem': 'landscape', 'retrato': 'portrait', 'bonito': 'beautiful',
+                            'mulher': 'woman', 'homem': 'man', 'criança': 'child'
+                        },
+                        'es': {
+                            'gato': 'gato', 'cachorro': 'perro', 'casa': 'casa', 'carro': 'coche',
+                            'paisagem': 'paisaje', 'retrato': 'retrato', 'bonito': 'hermoso'
+                        },
+                        'fr': {
+                            'gato': 'chat', 'cachorro': 'chien', 'casa': 'maison', 'carro': 'voiture',
+                            'paisagem': 'paysage', 'retrato': 'portrait', 'bonito': 'beau'
                         }
-                    } catch (err) {
-                        displayError(`Erro ao gerar lote de imagens: ${err.message}.`);
-                        break;
-                    }
-                }
-                
-                updateLoadingState(false);
-                if (allImages.length === 0) {
-                    createContentArea.innerHTML = `<p class="text-slate-400 text-center text-lg col-span-full">Suas imagens geradas aparecerão aqui.</p>`;
-                }
-            };
-            
-            const createInteractiveImageDiv = (image, isFavorite = false) => {
-                const imgDiv = document.createElement('div');
-                imgDiv.className = 'relative group rounded-xl overflow-hidden shadow-lg border border-slate-700 cursor-pointer';
-
-                const img = document.createElement('img');
-                img.src = image.src;
-                img.alt = "Imagem gerada";
-                img.className = 'w-full h-auto object-cover transition-transform duration-300 hover:scale-105';
-
-                imgDiv.appendChild(img);
-
-                const overlay = document.createElement('div');
-                overlay.className = 'absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300';
-
-                const viewButton = document.createElement('button');
-                viewButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
-                viewButton.className = 'text-white p-2 rounded-full bg-teal-500 hover:bg-teal-600 transition-colors mx-2';
-                viewButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openImageViewer(image.src, image.prompt);
-                });
-                overlay.appendChild(viewButton);
-
-                const favoriteButton = document.createElement('button');
-                const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-                const isCurrentlyFavorite = favorites.some(fav => fav.src === image.src);
-                favoriteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${isCurrentlyFavorite ? '#2dd4bf' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-                favoriteButton.className = 'text-white p-2 rounded-full bg-slate-700 hover:bg-red-500 transition-colors mx-2';
-                favoriteButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    let currentFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
-                    if (currentFavorites.some(fav => fav.src === image.src)) {
-                        currentFavorites = currentFavorites.filter(fav => fav.src !== image.src);
-                        favoriteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-                        if (isFavorite) renderFavorites();
-                    } else {
-                        currentFavorites.push(image);
-                        favoriteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#2dd4bf" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
-                    }
-                    localStorage.setItem('favorites', JSON.stringify(currentFavorites));
-                });
-                overlay.appendChild(viewButton);
-
-                imgDiv.appendChild(overlay);
-                return imgDiv;
-            };
-
-            const renderImages = (images, targetContainer, append = false) => {
-                if (!append) {
-                    targetContainer.innerHTML = '';
-                }
-                if (images.length === 0) {
-                    targetContainer.innerHTML = `<p class="text-slate-400 text-center text-lg col-span-full">Nenhuma imagem para exibir.</p>`;
-                    return;
-                }
-                images.forEach((image) => {
-                    const imgDiv = createInteractiveImageDiv(image, false);
-                    targetContainer.appendChild(imgDiv);
-                });
-            };
-
-            const handleTabChange = async (tabId) => {
-                document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
-                
-                createTabContent.classList.add('hidden');
-                favoritesTabContent.classList.add('hidden');
-                
-                if (tabId === 'tab-create') {
-                    createTabContent.classList.remove('hidden');
-                } else if (tabId === 'tab-favorites') {
-                    favoritesTabContent.classList.remove('hidden');
-                    renderFavorites();
-                }
-            };
-
-            const handleTranslatePrompt = async () => {
-                const prompt = promptInput.value.trim();
-                if (!prompt) {
-                    displayError('Por favor, insira um prompt para traduzir.');
-                    return;
-                }
-                updateLoadingState(true);
-                hideError();
-
-                const fullPrompt = `Traduza o seguinte texto para inglês, mantendo apenas o texto traduzido: "${prompt}"`;
-                try {
-                    const chatHistory = [{ role: "user", parts: [{ text: fullPrompt }] }];
-                    const payload = { contents: chatHistory };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-                    const result = await exponentialBackoff(() => fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    }));
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                        const translatedText = result.candidates[0].content.parts[0].text;
-                        promptInput.value = translatedText.replace(/^"|"$/g, '');
-                    } else {
-                        displayError("Não foi possível traduzir o prompt.");
-                    }
-                } catch (err) {
-                    displayError('Erro ao traduzir o prompt. Tente novamente mais tarde.');
-                } finally {
-                    updateLoadingState(false);
-                }
-            };
-
-            const handleEnhancePrompt = async () => {
-                const prompt = promptInput.value.trim();
-                if (!prompt) {
-                    displayError('Por favor, insira um prompt para melhorar.');
-                    return;
-                }
-                updateLoadingState(true);
-                hideError();
-
-                const fullPrompt = `Melhore o seguinte prompt de geração de imagem para torná-lo mais descritivo e detalhado, mantendo apenas o texto melhorado. O prompt é: "${prompt}"`;
-                try {
-                    const chatHistory = [{ role: "user", parts: [{ text: fullPrompt }] }];
-                    const payload = { contents: chatHistory };
-                    const apiKey = "";
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    };
                     
-                    const result = await exponentialBackoff(() => fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    }));
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                        const enhancedText = result.candidates[0].content.parts[0].text;
-                        promptInput.value = enhancedText;
-                    } else {
-                        displayError("Não foi possível melhorar o prompt.");
-                    }
-                } catch (err) {
-                    displayError('Erro ao melhorar o prompt. Tente novamente mais tarde.');
-                } finally {
-                    updateLoadingState(false);
-                }
-            };
-
-            const handleKeyDown = (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (!loading) {
-                        handleGenerateImages();
-                    }
-                }
-            };
-
-            promptInput.addEventListener('keydown', handleKeyDown);
-            generateButton.addEventListener('click', handleGenerateImages);
-            translateButton.addEventListener('click', handleTranslatePrompt);
-            enhanceButton.addEventListener('click', handleEnhancePrompt);
-
-            veo3Button.addEventListener('click', () => {
-                alert('A ferramenta Veo3 ainda não está disponível no Brasil. Para usar, você precisa de uma VPN com um IP localizado nos Estados Unidos.');
-                window.open('https://opal.withgoogle.com/?flow=drive:/1M1RZ5CqMRsP2Ys6JArbYZt0WyUq6AbnE&mode=app&shared=true', '_blank', 'noopener,noreferrer');
-            });
-            
-            veo3AlternativoButton.addEventListener('click', () => {
-                alert('Faça login no seu gmail para acessar o Veo texto para video com audio.');
-                window.open('https://docs.google.com/videos/u/0/', '_blank', 'noopener,noreferrer');
-            });
-
-            pixButton.addEventListener('click', () => {
-                try {
-                    navigator.clipboard.writeText('84996096315');
-                } catch (err) {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = '84996096315';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                }
-                pixModal.classList.remove('hidden');
-                pixModal.classList.add('flex');
-            });
-            closePixModal.addEventListener('click', () => {
-                pixModal.classList.remove('flex');
-                pixModal.classList.add('hidden');
-            });
-
-            const openImageViewer = (imageSrc, imagePrompt) => {
-                viewerImage.src = imageSrc;
-                selectedImageForDownload = imageSrc;
-                currentImagePrompt = imagePrompt;
-                imageViewerModal.classList.remove('hidden');
-                imageViewerModal.classList.add('flex');
-            };
-
-            closeImageViewerButton.addEventListener('click', () => {
-                imageViewerModal.classList.remove('flex');
-                imageViewerModal.classList.add('hidden');
-                selectedImageForDownload = null;
-                currentImagePrompt = '';
-            });
-
-            downloadImageButton.addEventListener('click', () => {
-                if (selectedImageForDownload) {
-                    const link = document.createElement('a');
-                    link.href = selectedImageForDownload;
-                    link.download = 'tm-arte-virtual.png';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            });
-
-            remixButton.addEventListener('click', () => {
-                if (currentImagePrompt) {
-                    promptInput.value = currentImagePrompt;
-                    imageViewerModal.classList.remove('flex');
-                    imageViewerModal.classList.add('hidden');
-                    handleTabChange('tab-create');
-                }
-            });
-
-            copyPromptButton.addEventListener('click', () => {
-                if (currentImagePrompt) {
-                    try {
-                        navigator.clipboard.writeText(currentImagePrompt);
-                        alert('Prompt copiado para a área de transferência!');
-                    } catch (err) {
-                        const textarea = document.createElement('textarea');
-                        textarea.value = currentImagePrompt;
-                        document.body.appendChild(textarea);
-                        textarea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textarea);
-                        alert('Prompt copiado para a área de transferência!');
-                    }
-                }
-            });
-
-            startButton.addEventListener('click', () => {
-                landingPage.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                handleTabChange('tab-create');
-                renderPromptHistory();
-            });
-
-            tabCreate.addEventListener('click', () => handleTabChange('tab-create'));
-            tabFavorites.addEventListener('click', () => handleTabChange('tab-favorites'));
-        });
+                    const words = originalPrompt.toLowerCase().split(' ');
+                    const translated = words.map(word => {
+                        return basicTranslations[toLang] && basicTranslations[toLang][word] 
+                            ? basicTranslations[toLang][word] 
+                            : word;
+                    }).join(' ');
+                    
+                    document.getElementById('prompt').value = translated;
+                    button.innerHTML = '<i class="fas fa-check mr-2"></i>Traduzido!';
+                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    button.classList.add('bg-green-600');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('bg-green-600');
+                        button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    }, 2000);
+                });
+        }
     </script>
 </body>
 </html>
