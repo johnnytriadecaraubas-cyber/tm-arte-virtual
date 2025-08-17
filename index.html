@@ -1,561 +1,758 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>T&M Arte Virtual - Criação de Imagens AI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>T&M Arte Virtual</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #e1e1e1;
+    }
+    
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #00b4db, #0083b0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn {
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .tab-active {
+      background: rgba(0, 180, 219, 0.2);
+      border-bottom: 3px solid #00b4db;
+      color: #00b4db;
+    }
+    
+    .prompt-suggestion {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .prompt-suggestion:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: scale(1.02);
+    }
+    
+    .image-preview {
+      background: #111;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .image-preview img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: #00b4db;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transform: translateX(400px);
+      transition: transform 0.5s ease;
+    }
+    
+    .notification.show {
+      transform: translateX(0);
+    }
+    
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #00b4db #1a1a2e;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1a1a2e;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #00b4db;
+      border-radius: 10px;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <!-- Header -->
-    <header class="gradient-bg shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <img src="pMvG5cSdQxStbTTMi53PG" alt="T&M Arte Virtual" class="h-12 w-12 rounded-full">
-                <h1 class="text-2xl font-bold">T&M Arte Virtual</h1>
-            </div>
-            <nav class="hidden md:flex space-x-6">
-                <button onclick="showTab('generator')" class="hover:text-yellow-300 transition-colors">Gerador</button>
-                <button onclick="showTab('veo3')" class="hover:text-yellow-300 transition-colors">VEO3</button>
-                <button onclick="showPix()" class="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                    <i class="fas fa-donate mr-2"></i>PIX
-                </button>
-            </nav>
+<body class="min-h-screen">
+  <!-- Notification -->
+  <div id="notification" class="notification hidden">
+    <div class="flex items-center">
+      <i class="fas fa-info-circle mr-2"></i>
+      <span id="notification-message">Mensagem de notificação</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-black bg-opacity-30 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="text-3xl logo">T&M Arte Virtual</div>
         </div>
-    </header>
+        <nav class="hidden md:flex space-x-8">
+          <a href="#gerar" class="text-gray-300 hover:text-white transition">Gerar Imagem</a>
+          <a href="#estilos" class="text-gray-300 hover:text-white transition">Estilos</a>
+          <a href="#ajuda" class="text-gray-300 hover:text-white transition">Apoie-nos</a>
+        </nav>
+        <button class="md:hidden text-white">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Generator Tab -->
-        <div id="generator-tab" class="tab-content">
-            <div class="grid lg:grid-cols-3 gap-8">
-                <!-- Controls Panel -->
-                <div class="lg:col-span-1">
-                    <div class="glass-effect rounded-xl p-6">
-                        <h2 class="text-xl font-bold mb-4">Controles de Geração</h2>
-                        
-                        <!-- Prompt Input -->
-                        <div class="mb-4">
-                            <label class="block mb-2">Prompt:</label>
-                            <textarea id="prompt" placeholder="Descreva a imagem que você quer criar..." 
-                                    class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600 focus:border-blue-500 h-24"></textarea>
-                            <div class="mt-2 flex space-x-2">
-                                <button onclick="enhancePromptInGenerator()" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                                    <i class="fas fa-magic mr-2"></i>Melhorar
-                                </button>
-                                <select id="translateLang" class="bg-gray-800 text-white px-3 py-2 rounded-lg border border-gray-600">
-                                    <option value="">Traduzir para...</option>
-                                    <option value="en">Inglês</option>
-                                    <option value="es">Espanhol</option>
-                                    <option value="fr">Francês</option>
-                                    <option value="it">Italiano</option>
-                                    <option value="de">Alemão</option>
-                                    <option value="ja">Japonês</option>
-                                    <option value="ko">Coreano</option>
-                                    <option value="zh">Chinês</option>
-                                </select>
-                                <button onclick="translatePromptInGenerator()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                    <i class="fas fa-language mr-2"></i>Traduzir
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Style Categories -->
-                        <div class="mb-4">
-                            <label class="block mb-2">Estilo:</label>
-                            <select id="style" class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600">
-                                <option value="">Selecione um estilo</option>
-                                <optgroup label="Realista">
-                                    <option value="photorealistic">Fotorrealista</option>
-                                    <option value="portrait">Retrato</option>
-                                    <option value="landscape">Paisagem</option>
-                                </optgroup>
-                                <optgroup label="Religioso">
-                                    <option value="religious-art">Arte Religiosa</option>
-                                    <option value="biblical">Bíblico</option>
-                                    <option value="sacred">Sagrado</option>
-                                </optgroup>
-                                <optgroup label="Terror">
-                                    <option value="horror">Terror</option>
-                                    <option value="dark-fantasy">Fantasia Sombria</option>
-                                    <option value="gothic">Gótico</option>
-                                </optgroup>
-                                <optgroup label="Romance">
-                                    <option value="romantic">Romântico</option>
-                                    <option value="wedding">Casamento</option>
-                                    <option value="love">Amor</option>
-                                </optgroup>
-                                <optgroup label="Ficção">
-                                    <option value="sci-fi">Ficção Científica</option>
-                                    <option value="fantasy">Fantasia</option>
-                                    <option value="cyberpunk">Cyberpunk</option>
-                                </optgroup>
-                                <optgroup label="Para Colorir">
-                                    <option value="coloring-book">Livro de Colorir</option>
-                                    <option value="line-art">Arte Linear</option>
-                                    <option value="mandala">Mandala</option>
-                                </optgroup>
-                                <optgroup label="Anime">
-                                    <option value="anime">Anime</option>
-                                    <option value="manga">Manga</option>
-                                    <option value="chibi">Chibi</option>
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <!-- Image Size -->
-                        <div class="mb-4">
-                            <label class="block mb-2">Tamanho da Imagem:</label>
-                            <select id="size" class="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-600">
-                                <option value="512x512">Quadrado (512x512)</option>
-                                <option value="768x512">Paisagem (768x512)</option>
-                                <option value="512x768">Retrato (512x768)</option>
-                                <option value="1024x1024">Grande Quadrado (1024x1024)</option>
-                                <option value="1024x768">Grande Paisagem (1024x768)</option>
-                                <option value="768x1024">Grande Retrato (768x1024)</option>
-                            </select>
-                        </div>
-
-                        <!-- Number of Images -->
-                        <div class="mb-4">
-                            <label class="block mb-2">Número de Imagens (1-30):</label>
-                            <input type="range" id="numImages" min="1" max="30" value="4" 
-                                   class="w-full" onchange="document.getElementById('numDisplay').textContent = this.value">
-                            <div class="text-center mt-1">
-                                <span id="numDisplay">4</span> imagens
-                            </div>
-                        </div>
-
-                        <!-- Generate Button -->
-                        <button onclick="generateImages()" 
-                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
-                                       py-3 rounded-lg font-semibold transition-all transform hover:scale-105">
-                            <i class="fas fa-magic mr-2"></i>Gerar Imagens
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Generated Images -->
-                <div class="lg:col-span-2">
-                    <div class="glass-effect rounded-xl p-6">
-                        <h2 class="text-xl font-bold mb-4">Imagens Geradas</h2>
-                        <div id="imageGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[400px]">
-                            <div class="col-span-full flex items-center justify-center text-gray-400">
-                                <i class="fas fa-image text-6xl mb-4"></i>
-                                <p class="text-center">Suas imagens aparecerão aqui após a geração</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VEO3 Tab -->
-        <div id="veo3-tab" class="tab-content hidden">
-            <div class="glass-effect rounded-xl p-8 text-center">
-                <h2 class="text-3xl font-bold mb-6">VEO3 - Geração de Vídeo AI</h2>
-                <div class="bg-yellow-600 text-black p-4 rounded-lg mb-6">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    <strong>Atenção:</strong> É necessário usar VPN com IP dos Estados Unidos para acessar o VEO3
-                </div>
-                <p class="text-xl mb-6">Acesse a tecnologia mais avançada de geração de vídeos por IA</p>
-                <button onclick="openVeo3()" 
-                        class="bg-red-600 hover:bg-red-700 px-8 py-4 rounded-lg text-xl font-bold transition-all transform hover:scale-105">
-                    <i class="fas fa-external-link-alt mr-2"></i>Abrir VEO3
-                </button>
-            </div>
-        </div>
-
-
-
-
-    </main>
-
-    <!-- PIX Modal -->
-    <div id="pixModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white text-black rounded-xl p-8 max-w-md mx-4">
-            <div class="text-center">
-                <h3 class="text-2xl font-bold mb-4">Apoie o T&M Arte Virtual</h3>
-                <p class="mb-6">Ajude a manter o site sempre atualizado e online com novas funcionalidades!</p>
-                
-                <div class="bg-gray-100 p-4 rounded-lg mb-4">
-                    <p class="font-bold">Chave PIX:</p>
-                    <p class="text-lg font-mono bg-gray-200 p-2 rounded" id="pixKey">84996096315</p>
-                    <p class="text-sm mt-2">Tancredo Oliveira - Banco Neon</p>
-                </div>
-                
-                <div class="flex space-x-4">
-                    <button onclick="copyPix()" class="bg-green-600 text-white px-4 py-2 rounded-lg flex-1">
-                        <i class="fas fa-copy mr-2"></i>Copiar PIX
-                    </button>
-                    <button onclick="closePix()" class="bg-gray-600 text-white px-4 py-2 rounded-lg flex-1">
-                        Fechar
-                    </button>
-                </div>
-            </div>
-        </div>
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-8">
+    <!-- Tabs -->
+    <div class="flex flex-wrap border-b border-gray-700 mb-8">
+      <button class="tab-btn tab-active px-6 py-3 font-medium text-white" data-tab="gerar">
+        <i class="fas fa-paint-brush mr-2"></i> Gerar Imagem
+      </button>
+      <button class="tab-btn px-6 py-3 font-medium text-gray-400 hover:text-white transition" data-tab="veo3">
+        <i class="fas fa-video mr-2"></i> VEO3
+      </button>
+      <button class="tab-btn px-6 py-3 font-medium text-gray-400 hover:text-white transition" data-tab="estilos">
+        <i class="fas fa-layer-group mr-2"></i> Estilos
+      </button>
+      <button class="tab-btn px-6 py-3 font-medium text-gray-400 hover:text-white transition" data-tab="ajuda">
+        <i class="fas fa-hand-holding-heart mr-2"></i> Apoie-nos
+      </button>
     </div>
 
-    <script type="module">
-        // Tab Management
-        window.showTab = function(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(tabName + '-tab').classList.remove('hidden');
-        }
+    <!-- Tab Content -->
+    <div id="tab-gerar" class="tab-content">
+      <div class="grid lg:grid-cols-2 gap-8 mb-8">
+        <!-- Prompt Input -->
+        <div class="card p-6">
+          <h2 class="text-2xl font-bold mb-6 text-white">Descreva sua imagem</h2>
+          
+          <div class="mb-4">
+            <label class="block text-gray-300 mb-2">Prompt em Português</label>
+            <textarea id="prompt-input" class="w-full p-4 bg-gray-900 bg-opacity-50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 resize-none" rows="4" placeholder="Ex: Um dragão majestoso voando sobre montanhas nevadas ao pôr do sol"></textarea>
+          </div>
 
-        // PIX Modal
-        window.showPix = function() {
-            document.getElementById('pixModal').classList.remove('hidden');
-        }
+          <!-- Translator -->
+          <div class="mb-4 p-4 bg-gray-900 bg-opacity-30 rounded-lg">
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-gray-300">Tradutor de Prompt</label>
+              <select id="language-select" class="bg-gray-800 text-white px-3 py-1 rounded text-sm">
+                <option value="en">Inglês</option>
+                <option value="es">Espanhol</option>
+                <option value="fr">Francês</option>
+                <option value="de">Alemão</option>
+                <option value="it">Italiano</option>
+                <option value="ja">Japonês</option>
+                <option value="ko">Coreano</option>
+                <option value="zh">Chinês</option>
+              </select>
+            </div>
+            <div id="translated-prompt" class="text-gray-400 text-sm bg-gray-900 p-3 rounded border border-gray-700 min-h-10"></div>
+          </div>
 
-        window.closePix = function() {
-            document.getElementById('pixModal').classList.add('hidden');
-        }
+          <!-- Prompt Enhancer -->
+          <div class="mb-6">
+            <button id="enhance-btn" class="btn bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-lg flex items-center transition">
+              <i class="fas fa-magic mr-2"></i> Melhorar Prompt
+            </button>
+          </div>
 
-        window.copyPix = function() {
-            navigator.clipboard.writeText('84996096315').then(() => {
-                alert('Chave PIX copiada com sucesso!');
-            });
-        }
+          <!-- Quick Suggestions -->
+          <div class="mb-6">
+            <h3 class="text-gray-300 text-sm font-medium mb-3">Sugestões Rápidas</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="prompt-suggestion bg-gray-800 p-2 rounded text-xs text-center">Um gato astronauta em Marte</div>
+              <div class="prompt-suggestion bg-gray-800 p-2 rounded text-xs text-center">Floresta encantada com fadas</div>
+              <div class="prompt-suggestion bg-gray-800 p-2 rounded text-xs text-center">Cidade futurista à noite</div>
+              <div class="prompt-suggestion bg-gray-800 p-2 rounded text-xs text-center">Praia paradisíaca ao pôr do sol</div>
+            </div>
+          </div>
+        </div>
 
-        // VEO3 Access
-        window.openVeo3 = function() {
-            window.open('https://opal.withgoogle.com/?flow=drive:/1M1RZ5CqMRsP2Ys6JArbYZt0WyUq6AbnE&mode=app&shared=true', '_blank');
-        }
+        <!-- Settings -->
+        <div class="card p-6">
+          <h2 class="text-2xl font-bold mb-6 text-white">Configurações</h2>
+          
+          <div class="space-y-6">
+            <div>
+              <label class="block text-gray-300 mb-2">Estilo</label>
+              <select id="style-select" class="w-full p-3 bg-gray-900 bg-opacity-50 border border-gray-600 rounded-lg text-white">
+                <optgroup label="Realista">
+                  <option value="realistic">Fotorealista</option>
+                  <option value="portrait">Retrato Profissional</option>
+                  <option value="landscape">Paisagem Natural</option>
+                </optgroup>
+                <optgroup label="Religioso">
+                  <option value="religious">Cenas Bíblicas</option>
+                  <option value="saint">Santos e Arcanjos</option>
+                  <option value="church">Igrejas Históricas</option>
+                </optgroup>
+                <optgroup label="Terror">
+                  <option value="horror">Terror Sombrio</option>
+                  <option value="ghost">Fantasmas e Espíritos</option>
+                  <option value="zombie">Apocalipse Zumbi</option>
+                </optgroup>
+                <optgroup label="Romance">
+                  <option value="romance">Amor Romântico</option>
+                  <option value="wedding">Casamentos</option>
+                  <option value="valentine">Dia dos Namorados</option>
+                </optgroup>
+                <optgroup label="Ficção">
+                  <option value="scifi">Ficção Científica</option>
+                  <option value="fantasy">Fantasia Épica</option>
+                  <option value="cyberpunk">Cyberpunk</option>
+                </optgroup>
+                <optgroup label="Desenhos">
+                  <option value="coloring">Desenhos para Colorir</option>
+                  <option value="kids">Infantil Simples</option>
+                  <option value="educational">Educativo</option>
+                </optgroup>
+                <optgroup label="Animes">
+                  <option value="anime">Anime Estilo Japones</option>
+                  <option value="manga">Cenas de Mangá</option>
+                  <option value="chibi">Chibi Cute</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-300 mb-2">Tamanho da Imagem</label>
+              <select id="size-select" class="w-full p-3 bg-gray-900 bg-opacity-50 border border-gray-600 rounded-lg text-white">
+                <option value="512x512">512 x 512 px (Quadrado)</option>
+                <option value="768x512">768 x 512 px (Landscape)</option>
+                <option value="512x768">512 x 768 px (Portrait)</option>
+                <option value="1024x1024">1024 x 1024 px (Alta Resolução)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-gray-300 mb-2">Quantidade de Imagens</label>
+              <input type="range" id="quantity-slider" min="1" max="30" value="4" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+              <div class="flex justify-between text-sm text-gray-400 mt-1">
+                <span>1 imagem</span>
+                <span id="quantity-value">4 imagens</span>
+                <span>30 imagens</span>
+              </div>
+            </div>
+
+            <button id="generate-btn" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-6 rounded-lg text-lg transition transform hover:scale-105 flex items-center justify-center">
+              <i class="fas fa-wand-magic-sparkles mr-3"></i> Gerar Imagens
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated Images -->
+      <div id="results" class="hidden">
+        <h2 class="text-2xl font-bold mb-6 text-white">Imagens Geradas</h2>
+        <div id="images-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- Images will be inserted here -->
+        </div>
         
+        <div class="text-center mt-8">
+          <button id="download-all" class="btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition">
+            <i class="fas fa-download mr-2"></i> Baixar Todas
+          </button>
+        </div>
+      </div>
+    </div>
 
-        // Image Generation
-        window.generateImages = function() {
-            const prompt = document.getElementById('prompt').value;
-            const style = document.getElementById('style').value;
-            const size = document.getElementById('size').value;
-            const numImages = parseInt(document.getElementById('numImages').value);
+    <!-- VEO3 Tab -->
+    <div id="tab-veo3" class="tab-content hidden">
+      <div class="card p-8 text-center">
+        <div class="text-6xl mb-6 floating"><i class="fas fa-video"></i></div>
+        <h2 class="text-3xl font-bold mb-4 text-white">VEO3 - Google's Video Generation</h2>
+        <p class="text-gray-300 mb-6 leading-relaxed">
+          Crie vídeos incríveis com inteligência artificial avançada do Google. 
+          O VEO3 transforma seus prompts em vídeos realistas de alta qualidade.
+        </p>
+        
+        <div class="bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-lg p-4 mb-6 text-yellow-200 text-sm">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          <strong>Importante:</strong> Para acessar o VEO3, você precisará de uma VPN com IP nos Estados Unidos.
+          O serviço está disponível apenas para usuários norte-americanos.
+        </div>
+        
+        <button id="veo3-btn" class="btn bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white px-12 py-4 rounded-lg text-lg font-bold transition transform hover:scale-105 flex items-center mx-auto">
+          <i class="fas fa-external-link-alt mr-3"></i> Acessar VEO3
+        </button>
+        
+        <p class="text-gray-400 text-sm mt-4">
+          Você será redirecionado para a plataforma oficial do Google
+        </p>
+      </div>
+    </div>
 
-            if (!prompt.trim()) {
-                alert('Por favor, insira um prompt para gerar as imagens.');
-                return;
-            }
+    <!-- Estilos Tab -->
+    <div id="tab-estilos" class="tab-content hidden">
+      <h2 class="text-3xl font-bold mb-8 text-white text-center">Estilos de Geração</h2>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Realista -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-blue-400"><i class="fas fa-camera"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Realista</h3>
+          <p class="text-gray-300 mb-4">Imagens que parecem fotografias reais, com detalhes impressionantes e iluminação natural.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Fotorealista:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Retratos:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Paisagens:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
 
-            const imageGrid = document.getElementById('imageGrid');
-            imageGrid.innerHTML = '<div class="col-span-full text-center"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p>Gerando imagens...</p></div>';
+        <!-- Religioso -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-yellow-400"><i class="fas fa-cross"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Religioso</h3>
+          <p class="text-gray-300 mb-4">Cenas bíblicas, santos, igrejas históricas e temas espirituais com reverência e detalhes.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Cenas Bíblicas:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Santos:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Igrejas:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
 
-            // Generate unique images with proper style application
-            setTimeout(() => {
-                let html = '';
-                const timestamp = Date.now();
-                
-                for (let i = 0; i < numImages; i++) {
-                    // Create unique prompt with style modifiers
-                    let fullPrompt = prompt;
-                    
-                    // Apply style modifiers
-                    if (style) {
-                        const styleModifiers = {
-                            'photorealistic': 'photorealistic, ultra realistic, 8k, professional photography',
-                            'portrait': 'professional portrait photography, studio lighting, detailed face',
-                            'landscape': 'landscape photography, scenic view, natural lighting',
-                            'religious-art': 'religious art, sacred, spiritual, renaissance style',
-                            'biblical': 'biblical scene, classical religious painting, divine lighting',
-                            'sacred': 'sacred art, holy, ethereal, golden light',
-                            'horror': 'horror style, dark, scary, gothic atmosphere',
-                            'dark-fantasy': 'dark fantasy art, mysterious, shadows, dramatic',
-                            'gothic': 'gothic style, dark architecture, medieval atmosphere',
-                            'romantic': 'romantic style, soft lighting, pastel colors, dreamy',
-                            'wedding': 'wedding photography, elegant, beautiful, celebration',
-                            'love': 'romantic scene, love, tender moment, soft focus',
-                            'sci-fi': 'science fiction, futuristic, high tech, space age',
-                            'fantasy': 'fantasy art, magical, enchanted, mystical creatures',
-                            'cyberpunk': 'cyberpunk style, neon lights, futuristic city, digital',
-                            'coloring-book': 'coloring book style, black and white line art, simple',
-                            'line-art': 'line art, minimalist, clean lines, black and white',
-                            'mandala': 'mandala design, geometric patterns, symmetrical, intricate',
-                            'anime': 'anime style, manga art, japanese animation, colorful',
-                            'manga': 'manga style, black and white, japanese comic art',
-                            'chibi': 'chibi style, cute, small characters, kawaii'
-                        };
-                        
-                        if (styleModifiers[style]) {
-                            fullPrompt += ', ' + styleModifiers[style];
-                        }
-                    }
-                    
-                    // Add variation to each image
-                    const variations = [
-                        ', high quality, detailed',
-                        ', masterpiece, artistic',
-                        ', professional, clean',
-                        ', vibrant colors, sharp',
-                        ', dramatic lighting',
-                        ', soft focus, elegant',
-                        ', dynamic composition',
-                        ', rich textures, depth'
-                    ];
-                    
-                    const variation = variations[i % variations.length];
-                    const uniqueId = `${timestamp}_${i}_${Math.random().toString(36).substr(2, 9)}`;
-                    const sizeParam = `&size=${size}`;
-                    const encodedPrompt = encodeURIComponent(fullPrompt + variation);
-                    
-                    // Calculate dimensions based on selected size
-                    const [width, height] = size.split('x').map(Number);
-                    const aspectRatio = width / height;
-                    
-                    // Generate proper aspect ratio URL parameter
-                    let aspectParam = '';
-                    if (width === height) {
-                        aspectParam = '&aspect=1:1';
-                    } else if (aspectRatio > 1) {
-                        // Landscape
-                        const ratio = Math.round(aspectRatio * 100) / 100;
-                        if (ratio >= 1.77) aspectParam = '&aspect=16:9';
-                        else if (ratio >= 1.4) aspectParam = '&aspect=3:2';
-                        else aspectParam = '&aspect=4:3';
-                    } else {
-                        // Portrait
-                        const ratio = Math.round((height / width) * 100) / 100;
-                        if (ratio >= 1.77) aspectParam = '&aspect=9:16';
-                        else if (ratio >= 1.4) aspectParam = '&aspect=2:3';
-                        else aspectParam = '&aspect=3:4';
-                    }
-                    
-                    const imageUrl = `keys/${uniqueId}?prompt=${encodedPrompt}${sizeParam}${aspectParam}`;
-                    const safePrompt = fullPrompt.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-                    
-                    html += `
-                        <div class="relative group">
-                            <div class="w-full bg-gray-800 rounded-lg overflow-hidden" style="aspect-ratio: ${width}/${height};">
-                                <img src="${imageUrl}" 
-                                     alt="Generated Image ${i+1}" 
-                                     class="w-full h-full object-cover cursor-pointer"
-                                     onclick="viewImage('${imageUrl}', '${safePrompt}', '${width}x${height}')">
-                            </div>
-                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg flex items-center justify-center">
-                                <div class="flex space-x-2">
-                                    <button onclick="event.stopPropagation(); viewImage('${imageUrl}', '${safePrompt}', '${width}x${height}')" 
-                                            class="bg-green-600 text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button onclick="event.stopPropagation(); downloadImage('${imageUrl}', '${uniqueId}')" 
-                                            class="bg-blue-600 text-white px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                imageGrid.innerHTML = html;
-            }, 2000);
-        }
+        <!-- Terror -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-red-400"><i class="fas fa-ghost"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Terror</h3>
+          <p class="text-gray-300 mb-4">Cenas sombrias, fantasmas, monstros e ambientes de suspense com atmosfera aterrorizante.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Sombrio:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Fantasmas:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Zumbis:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
 
-        window.downloadImage = function(src, filename = null) {
-            const downloadName = filename ? `tm_arte_virtual_${filename}.png` : `tm_arte_virtual_${Date.now()}.png`;
+        <!-- Romance -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-pink-400"><i class="fas fa-heart"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Romance</h3>
+          <p class="text-gray-300 mb-4">Cenas de amor, casamentos, encontros românticos e momentos especiais cheios de emoção.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Amor:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Casamentos:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Dia dos Namorados:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
+
+        <!-- Ficção -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-purple-400"><i class="fas fa-rocket"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Ficção</h3>
+          <p class="text-gray-300 mb-4">Mundos futuristas, tecnologia avançada, planetas distantes e criaturas alienígenas.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Ficção Científica:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Fantasia:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Cyberpunk:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
+
+        <!-- Desenhos -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-green-400"><i class="fas fa-pencil-alt"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Desenhos</h3>
+          <p class="text-gray-300 mb-4">Imagens simples e divertidas perfeitas para colorir, educação infantil e atividades.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Para Colorir:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Infantil:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Educativo:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
+
+        <!-- Animes -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-indigo-400"><i class="fas fa-mask"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Animes</h3>
+          <p class="text-gray-300 mb-4">Estilo japonês clássico, personagens fofos, cenas de ação e momentos emocionantes.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Anime Japonês:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Mangá:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Chibi:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
+
+        <!-- Artístico -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-orange-400"><i class="fas fa-palette"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Artístico</h3>
+          <p class="text-gray-300 mb-4">Pinturas, quadros famosos, estilos artísticos clássicos e modernos de grandes artistas.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Impressionismo:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Renascentista:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Moderno:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
+
+        <!-- Natureza -->
+        <div class="card p-6">
+          <div class="text-4xl mb-4 text-teal-400"><i class="fas fa-tree"></i></div>
+          <h3 class="text-xl font-bold mb-3 text-white">Natureza</h3>
+          <p class="text-gray-300 mb-4">Animais selvagens, paisagens naturais, oceanos, florestas e ecossistemas diversos.</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span>Animais:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Paisagens:</span> <span class="text-green-400">✔️</span></div>
+            <div class="flex justify-between"><span>Oceanos:</span> <span class="text-green-400">✔️</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apoie-nos Tab -->
+    <div id="tab-ajuda" class="tab-content hidden">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+          <div class="text-6xl mb-6 floating"><i class="fas fa-heart"></i></div>
+          <h2 class="text-3xl font-bold mb-4 text-white">Apoie T&M Arte Virtual</h2>
+          <p class="text-gray-300 text-lg leading-relaxed">
+            Ajude a manter este projeto vivo e em constante evolução. 
+            Suas contribuições nos permitem melhorar o site, adicionar novas funcionalidades 
+            e manter os servidores online para todos os usuários.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- PIX QR Code -->
+          <div class="card p-6">
+            <h3 class="text-2xl font-bold mb-4 text-white text-center">Doação via PIX</h3>
+            <div class="text-center mb-6">
+              <div class="bg-white p-4 rounded-lg inline-block mb-4">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=84996096315" alt="PIX QR Code" class="w-40 h-40">
+              </div>
+              <p class="text-gray-300">Escaneie o QR Code acima</p>
+            </div>
             
-            // Create a temporary canvas to handle the image
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
+            <div class="bg-gray-900 p-4 rounded-lg mb-4">
+              <div class="text-sm text-gray-400 mb-1">Chave PIX (Celular)</div>
+              <div class="text-white font-mono">(84) 99609-6315</div>
+            </div>
             
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                
-                canvas.toBlob(function(blob) {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = downloadName;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 'image/png');
-            };
-            
-            img.onerror = function() {
-                // Fallback: direct link download
-                const a = document.createElement('a');
-                a.href = src;
-                a.download = downloadName;
-                a.target = '_blank';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
-            
-            img.src = src;
-        }
+            <div class="bg-gray-900 p-4 rounded-lg">
+              <div class="text-sm text-gray-400 mb-1">Nome do Recebedor</div>
+              <div class="text-white">Tancredo Oliveira - Banco Neon</div>
+            </div>
+          </div>
 
-        window.viewImage = function(src, prompt, dimensions = null) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4';
-            modal.onclick = function(e) {
-                if (e.target === modal) modal.remove();
-            };
+          <!-- Benefits -->
+          <div class="card p-6">
+            <h3 class="text-2xl font-bold mb-6 text-white">Benefícios da Contribuição</h3>
             
-            modal.innerHTML = `
-                <div class="max-w-6xl max-h-[95vh] bg-white rounded-lg overflow-hidden shadow-2xl">
-                    <div class="bg-gray-800 text-white p-4 flex justify-between items-center">
-                        <h3 class="font-bold text-lg">Visualizar Imagem Gerada</h3>
-                        <button onclick="this.closest('.fixed').remove()" class="text-white hover:text-red-400 text-xl">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex justify-center mb-4">
-                            <div class="max-w-full max-h-[70vh] bg-gray-100 rounded-lg shadow-lg overflow-hidden">
-                                <img src="${src}" alt="Generated Image" class="w-full h-full object-contain" 
-                                     onload="this.style.opacity='1'" style="opacity:0; transition: opacity 0.3s;">
-                            </div>
-                        </div>
-                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
-                            <p class="text-sm text-gray-700"><strong>Prompt usado:</strong></p>
-                            <p class="text-sm text-gray-600 mt-1 italic">${prompt}</p>
-                            ${dimensions ? `<p class="text-sm text-gray-500 mt-2"><strong>Dimensões:</strong> ${dimensions}</p>` : ''}
-                        </div>
-                        <div class="mt-6 flex justify-center space-x-4">
-                            <button onclick="downloadImage('${src}', 'imagem_${Date.now()}')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-                                <i class="fas fa-download mr-2"></i>Baixar Imagem
-                            </button>
-                            <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
-                                <i class="fas fa-times mr-2"></i>Fechar
-                            </button>
-                        </div>
-                    </div>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <div class="bg-green-500 text-white rounded-full p-2 mr-3 mt-1">
+                  <i class="fas fa-check text-sm"></i>
                 </div>
-            `;
-            document.body.appendChild(modal);
-        }
+                <div>
+                  <h4 class="font-semibold text-white">Melhorias Contínuas</h4>
+                  <p class="text-gray-300 text-sm">Novos estilos, funcionalidades e melhorias de desempenho</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start">
+                <div class="bg-green-500 text-white rounded-full p-2 mr-3 mt-1">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-white">Servidores Estáveis</h4>
+                  <p class="text-gray-300 text-sm">Mantenha o site rápido e disponível 24/7 para todos</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start">
+                <div class="bg-green-500 text-white rounded-full p-2 mr-3 mt-1">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-white">Novos Recursos</h4>
+                  <p class="text-gray-300 text-sm">Implementação de pedidos da comunidade</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start">
+                <div class="bg-green-500 text-white rounded-full p-2 mr-3 mt-1">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-white">Suporte ao Desenvolvedor</h4>
+                  <p class="text-gray-300 text-sm">Ajude Tancredo a continuar criando ferramentas incríveis</p>
+                </div>
+              </div>
+            </div>
 
+            <div class="mt-6 p-4 bg-blue-900 bg-opacity-30 border border-blue-600 rounded-lg">
+              <p class="text-blue-200 text-sm">
+                <i class="fas fa-info-circle mr-2"></i>
+                Todas as contribuições são voluntárias e muito apreciadas. 
+                Mesmo valores pequenos fazem grande diferença!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="mt-12 card p-6">
+          <h3 class="text-2xl font-bold mb-6 text-white text-center">O que os usuários dizem</h3>
+          
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="text-center p-4 bg-gray-900 bg-opacity-30 rounded-lg">
+              <div class="text-yellow-400 mb-2">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+              </div>
+              <p class="text-gray-300 text-sm mb-3">"Ferramenta incrível! Gero imagens para meus projetos todos os dias. Vale cada centavo!"</p>
+              <div class="text-white font-semibold">- Maria Silva</div>
+            </div>
+            
+            <div class="text-center p-4 bg-gray-900 bg-opacity-30 rounded-lg">
+              <div class="text-yellow-400 mb-2">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+              </div>
+              <p class="text-gray-300 text-sm mb-3">"O melhor site de geração de imagens que já usei. As atualizações são constantes!"</p>
+              <div class="text-white font-semibold">- Carlos Mendes</div>
+            </div>
+            
+            <div class="text-center p-4 bg-gray-900 bg-opacity-30 rounded-lg">
+              <div class="text-yellow-400 mb-2">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+              </div>
+              <p class="text-gray-300 text-sm mb-3">"Apoiar foi a melhor decisão. Vejo as melhorias chegando rapidamente!"</p>
+              <div class="text-white font-semibold">- Ana Costa</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-black bg-opacity-30 backdrop-blur-md border-t border-gray-700 mt-16">
+    <div class="container mx-auto px-6 py-8">
+      <div class="text-center">
+        <div class="logo text-2xl mb-4">T&M Arte Virtual</div>
+        <p class="text-gray-400 mb-4">Transformando ideias em arte com inteligência artificial</p>
+        <div class="flex justify-center space-x-6 text-gray-500">
+          <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="hover:text-white transition"><i class="fab fa-youtube"></i></a>
+          <a href="#" class="hover:text-white transition"><i class="fab fa-tiktok"></i></a>
+        </div>
+        <p class="text-gray-500 text-sm mt-6">© 2025 T&M Arte Virtual. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab Navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('tab-active');
+          b.classList.add('text-gray-400');
+        });
+        btn.classList.add('tab-active');
+        btn.classList.remove('text-gray-400');
         
-        // Enhance prompt in generator tab
-        window.enhancePromptInGenerator = function() {
-            const originalPrompt = document.getElementById('prompt').value;
-            
-            if (!originalPrompt.trim()) {
-                alert('Por favor, digite um prompt primeiro.');
-                return;
-            }
+        // Show active tab content
+        const tabId = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      });
+    });
 
-            const enhancements = [
-                ', highly detailed, 8k resolution, professional photography, masterpiece',
-                ', cinematic lighting, ultra realistic, award winning, high quality',
-                ', vibrant colors, sharp focus, perfect composition, stunning details',
-                ', dramatic lighting, photorealistic, studio quality, intricate details',
-                ', premium quality, perfect lighting, rich textures, depth of field',
-                ', professional grade, exceptional detail, perfect clarity, artistic masterpiece',
-                ', ultra high definition, flawless execution, museum quality, breathtaking',
-                ', crystal clear, perfect proportions, excellent composition, world class'
-            ];
+    // Quantity slider
+    const quantitySlider = document.getElementById('quantity-slider');
+    const quantityValue = document.getElementById('quantity-value');
+    quantitySlider.addEventListener('input', () => {
+      const value = quantitySlider.value;
+      quantityValue.textContent = `${value} imagens`;
+    });
 
-            const randomEnhancement = enhancements[Math.floor(Math.random() * enhancements.length)];
-            const enhanced = originalPrompt + randomEnhancement;
-            
-            document.getElementById('prompt').value = enhanced;
-            
-            // Show feedback
-            const button = event.target;
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-check mr-2"></i>Prompt Melhorado!';
-            button.classList.remove('bg-purple-600', 'hover:bg-purple-700');
-            button.classList.add('bg-green-600');
-            
-            setTimeout(() => {
-                button.innerHTML = originalText;
-                button.classList.remove('bg-green-600');
-                button.classList.add('bg-purple-600', 'hover:bg-purple-700');
-            }, 2000);
+    // Prompt suggestions
+    document.querySelectorAll('.prompt-suggestion').forEach(suggestion => {
+      suggestion.addEventListener('click', () => {
+        document.getElementById('prompt-input').value = suggestion.textContent;
+      });
+    });
+
+    // Language translation (mock)
+    const languageSelect = document.getElementById('language-select');
+    const translatedPrompt = document.getElementById('translated-prompt');
+    const promptInput = document.getElementById('prompt-input');
+    
+    promptInput.addEventListener('input', updateTranslation);
+    languageSelect.addEventListener('change', updateTranslation);
+    
+    function updateTranslation() {
+      const text = promptInput.value.trim();
+      const lang = languageSelect.value;
+      
+      if (!text) {
+        translatedPrompt.textContent = '';
+        return;
+      }
+      
+      const translations = {
+        'en': 'English translation of your prompt...',
+        'es': 'Traducción al español de su indicación...',
+        'fr': 'Traduction en français de votre invite...',
+        'de': 'Deutsche Übersetzung Ihres Prompts...',
+        'it': 'Traduzione in italiano del tuo prompt...',
+        'ja': 'あなたのプロンプトの日本語翻訳...',
+        'ko': '프롬프트의 한국어 번역...',
+        'zh': '您的提示的中文翻译...'
+      };
+      
+      translatedPrompt.textContent = translations[lang] || translations['en'];
+    }
+
+    // Prompt enhancement
+    document.getElementById('enhance-btn').addEventListener('click', () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        showNotification('Por favor, insira um prompt para melhorar');
+        return;
+      }
+      
+      // Mock enhancement
+      const enhancements = [
+        `${prompt}, alta qualidade, detalhes impressionantes, iluminação profissional, 8K`,
+        `Imagem ultra realista de ${prompt}, estilo fotográfico profissional, profundidade de campo, detalhes nítidos`,
+        `${prompt} em estilo artístico impressionante, pinceladas detalhadas, cores vibrantes, obra de arte digital`,
+        `Cena cinematográfica de ${prompt}, iluminação dramática, profundidade de campo rasa, qualidade de filme`
+      ];
+      
+      const enhanced = enhancements[Math.floor(Math.random() * enhancements.length)];
+      promptInput.value = enhanced;
+      updateTranslation();
+      showNotification('Prompt melhorado com sucesso!');
+    });
+
+    // VEO3 button
+    document.getElementById('veo3-btn').addEventListener('click', () => {
+      showNotification('Lembre-se: você precisará de uma VPN com IP nos Estados Unidos para acessar o VEO3!');
+      setTimeout(() => {
+        window.open('https://opal.withgoogle.com/?flow=drive:/1M1RZ5CqMRsP2Ys6JArbYZt0WyUq6AbnE&mode=app&shared=true', '_blank');
+      }, 2000);
+    });
+
+    // Generate images
+    document.getElementById('generate-btn').addEventListener('click', () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        showNotification('Por favor, insira um prompt para gerar imagens');
+        return;
+      }
+      
+      const quantity = document.getElementById('quantity-slider').value;
+      const style = document.getElementById('style-select').value;
+      const size = document.getElementById('size-select').value;
+      
+      showNotification(`Gerando ${quantity} imagens... Isso pode levar alguns segundos.`);
+      
+      // Hide results initially
+      document.getElementById('results').classList.add('hidden');
+      document.getElementById('images-container').innerHTML = '';
+      
+      // Simulate generation delay
+      setTimeout(() => {
+        const container = document.getElementById('images-container');
+        const [width, height] = size.split('x');
+        
+        for (let i = 0; i < quantity; i++) {
+          // Random aspect ratio based on size selection
+          const aspect = width > height ? 'aspect-video' : width < height ? 'aspect-[3/4]' : 'aspect-square';
+          
+          const img = document.createElement('div');
+          img.className = `image-preview ${aspect} floating`;
+          img.innerHTML = `
+            <img src="https://placehold.co/${width}x${height}/1a1a2e/00b4db?text=Gerando+Imagem+${i+1}" alt="Imagem gerada ${i+1}">
+            <div class="p-2 bg-gray-900 bg-opacity-70 text-white text-xs">
+              ${prompt.substring(0, 30)}... • ${style}
+            </div>
+          `;
+          container.appendChild(img);
         }
         
-        // Translate prompt in generator tab
-        window.translatePromptInGenerator = function() {
-            const originalPrompt = document.getElementById('prompt').value;
-            const toLang = document.getElementById('translateLang').value;
-            
-            if (!originalPrompt.trim()) {
-                alert('Por favor, digite um prompt primeiro.');
-                return;
-            }
-            
-            if (!toLang) {
-                alert('Por favor, selecione um idioma para tradução.');
-                return;
-            }
-            
-            const button = event.target;
-            const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traduzindo...';
-            button.disabled = true;
-            
-            // Use MyMemory translation API
-            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(originalPrompt)}&langpair=pt|${toLang}`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.responseStatus === 200 || data.responseData) {
-                        document.getElementById('prompt').value = data.responseData.translatedText;
-                        button.innerHTML = '<i class="fas fa-check mr-2"></i>Traduzido!';
-                        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                        button.classList.add('bg-green-600');
-                    } else {
-                        throw new Error('Translation failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Translation error:', error);
-                    // Basic fallback translations
-                    const basicTranslations = {
-                        'en': {
-                            'gato': 'cat', 'cachorro': 'dog', 'casa': 'house', 'carro': 'car',
-                            'paisagem': 'landscape', 'retrato': 'portrait', 'bonito': 'beautiful',
-                            'mulher': 'woman', 'homem': 'man', 'criança': 'child'
-                        },
-                        'es': {
-                            'gato': 'gato', 'cachorro': 'perro', 'casa': 'casa', 'carro': 'coche',
-                            'paisagem': 'paisaje', 'retrato': 'retrato', 'bonito': 'hermoso'
-                        },
-                        'fr': {
-                            'gato': 'chat', 'cachorro': 'chien', 'casa': 'maison', 'carro': 'voiture',
-                            'paisagem': 'paysage', 'retrato': 'portrait', 'bonito': 'beau'
-                        }
-                    };
-                    
-                    const words = originalPrompt.toLowerCase().split(' ');
-                    const translated = words.map(word => {
-                        return basicTranslations[toLang] && basicTranslations[toLang][word] 
-                            ? basicTranslations[toLang][word] 
-                            : word;
-                    }).join(' ');
-                    
-                    document.getElementById('prompt').value = translated;
-                    button.innerHTML = '<i class="fas fa-check mr-2"></i>Traduzido!';
-                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    button.classList.add('bg-green-600');
-                })
-                .finally(() => {
-                    button.disabled = false;
-                    setTimeout(() => {
-                        button.innerHTML = originalText;
-                        button.classList.remove('bg-green-600');
-                        button.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    }, 2000);
-                });
-        }
-    </script>
+        document.getElementById('results').classList.remove('hidden');
+        showNotification(`${quantity} imagens geradas com sucesso!`);
+      }, 2000);
+    });
+
+    // Download all
+    document.getElementById('download-all').addEventListener('click', () => {
+      showNotification('Funcionalidade de download em desenvolvimento. Em breve!');
+    });
+
+    // Notification system
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notification-message');
+    
+    function showNotification(message) {
+      notificationMessage.textContent = message;
+      notification.classList.remove('hidden');
+      notification.classList.add('show');
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.classList.add('hidden');
+        }, 500);
+      }, 3000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show welcome notification
+      setTimeout(() => {
+        showNotification('Bem-vindo ao T&M Arte Virtual! Comece criando sua primeira imagem.');
+      }, 1000);
+    });
+  </script>
 </body>
 </html>
